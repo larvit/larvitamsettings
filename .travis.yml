@@ -1,0 +1,41 @@
+dist: trusty
+language: node_js
+sudo: required
+
+env:
+  - CXX=g++-4.8
+
+node_js:
+  - 4
+  - 5
+  - 6
+  - 7
+
+notifications:
+  email:
+    - lilleman@larvit.se
+    - tobias@nublar.se
+
+before_install:
+  - $CXX --version
+
+install:
+  - if [[ $TRAVIS_OS_NAME == "linux" ]]; then export CXX=g++-4.8; fi
+  - npm i
+  - sudo apt-get install -qq --no-install-recommends mariadb-client
+
+services:
+  - rabbitmq
+
+addons:
+  mariadb: '10.1'
+  apt:
+    sources:
+    - ubuntu-toolchain-r-test
+    packages:
+    - g++-4.8
+
+before_script:
+  - mysql -e "create database IF NOT EXISTS test;" -uroot
+
+script: DBCONFFILE=db_travis.json INTCONFFILE=amqp_travis.json npm test
