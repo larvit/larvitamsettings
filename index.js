@@ -2,7 +2,7 @@
 
 const	EventEmitter	= require('events').EventEmitter,
 	eventEmitter	= new EventEmitter(),
-	dbmigration	= require('larvitdbmigration')({'tableName': 'product_db_version', 'migrationScriptsPath': __dirname + '/dbmigration'}),
+	dbmigration	= require('larvitdbmigration')({'tableName': 'setting_db_version', 'migrationScriptsPath': __dirname + '/dbmigration'}),
 	amsync	= require('larvitamsync'),
 	async	= require('async'),
 	log	= require('winston'),
@@ -219,15 +219,19 @@ function runDumpServer(cb) {
 }
 
 function get(settingName, cb) {
-	db.query('SELECT content FROM settings WHERE name = ?', [settingName], function(err, rows) {
+	ready(function(err) {
 		if (err) { cb(err); return; }
 
-		if (rows.length === 0) {
-			cb(null, null);
-			return;
-		}
+		db.query('SELECT content FROM settings WHERE name = ?', [settingName], function(err, rows) {
+			if (err) { cb(err); return; }
 
-		cb(null, rows[0].content);
+			if (rows.length === 0) {
+				cb(null, null);
+				return;
+			}
+
+			cb(null, rows[0].content);
+		});
 	});
 }
 
