@@ -112,6 +112,8 @@ describe('Settings', function() {
 		setting2Name	= 'obiobkbks',
 		setting2Value	= '999f2ekfdfdd';
 
+	it('should return from the ready function', settings.ready);
+
 	it('should set a setting', function(done) {
 		settings.set(setting1Name, setting1Value, function(err) {
 			if (err) throw err;

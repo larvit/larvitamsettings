@@ -61,12 +61,7 @@ function listenToQueue(retries, cb) {
 	log.info('larvitamsettings: index.js - listenToQueue() - listenMethod: ' + listenMethod);
 
 	tasks.push(function(cb) {
-		if (intercom.queueReady === true) {
-			cb();
-			return;
-		}
-
-		intercom.on('ready', cb);
+		intercom.ready(cb);
 	});
 
 	tasks.push(function(cb) {
@@ -93,11 +88,7 @@ function listenToQueue(retries, cb) {
 		}, cb);
 	});
 
-	async.series(tasks, function(err) {
-		if ( ! err) {
-			ready();
-		}
-	});
+	async.series(tasks, cb);
 }
 // Run listenToQueue as soon as all I/O is done, this makes sure the exports.mode can be set
 // by the application before listening commences
@@ -142,12 +133,7 @@ function ready(retries, cb) {
 	}
 
 	tasks.push(function(cb) {
-		if (intercom.queueReady === true) {
-			cb();
-			return;
-		}
-
-		intercom.on('ready', cb);
+		intercom.ready(cb);
 	});
 
 	if (exports.mode === 'both' || exports.mode === 'slave') {
@@ -171,6 +157,7 @@ function ready(retries, cb) {
 
 	async.series(tasks, function(err) {
 		if (err) {
+			log.error('larvitamsettings: index.js: ready() - err: ' + err.message);
 			return;
 		}
 
