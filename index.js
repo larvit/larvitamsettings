@@ -207,6 +207,7 @@ function runDumpServer(cb) {
 
 	// Tables
 	args.push('settings');
+	args.push('setting_db_version');
 
 	options.dataDumpCmd = {
 		'command':	'mysqldump',
