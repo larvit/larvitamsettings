@@ -88,6 +88,9 @@ function listenToQueue(retries, cb) {
 		}, cb);
 	});
 
+	// Make sure ready is ran
+	tasks.push(ready);
+
 	async.series(tasks, cb);
 }
 // Run listenToQueue as soon as all I/O is done, this makes sure the exports.mode can be set
@@ -253,7 +256,7 @@ exports.emitter	= new EventEmitter();
 exports.exchangeName	= 'larvitamsettings';
 exports.get	= get;
 exports.listenToQueue	= listenToQueue;
-exports.mode	= 'slave'; // or "master"
+exports.mode	= 'notSet'; // "slave" or "master"
 exports.ready	= ready;
 exports.set	= set;
 exports.writeToDb	= writeToDb;
