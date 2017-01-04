@@ -101,6 +101,8 @@ setImmediate(listenToQueue);
 function ready(retries, cb) {
 	const	tasks	= [];
 
+	log.silly('larvitamsettings: index.js - ready() - Running');
+
 	if (typeof retries === 'function') {
 		cb	= retries;
 		retries	= 0;
@@ -110,9 +112,14 @@ function ready(retries, cb) {
 		cb = function(){};
 	}
 
-	if (isReady === true) { cb(); return; }
+	if (isReady === true) {
+		log.silly('larvitamsettings: index.js - ready() - isReady === true');
+		cb();
+		return;
+	}
 
 	if (readyInProgress === true) {
+		log.debug('larvitamsettings: index.js - ready() - readyInProgress === true');
 		eventEmitter.on('ready', cb);
 		return;
 	}
@@ -121,9 +128,8 @@ function ready(retries, cb) {
 		retries = 0;
 	}
 
-	readyInProgress = true;
-
 	if ( ! (intercom instanceof require('larvitamintercom')) && retries < 10) {
+		log.debug('larvitamsettings: index.js - ready() - intercom is not an an instance of Intercom, retrying in 10ms');
 		retries ++;
 		setTimeout(function() {
 			ready(retries, cb);
@@ -135,7 +141,12 @@ function ready(retries, cb) {
 		throw err;
 	}
 
+	log.debug('larvitamsettings: index.js - ready() - intercom is an instance of Intercom, continuing.');
+
+	readyInProgress = true;
+
 	tasks.push(function(cb) {
+		log.debug('larvitamsettings: index.js - ready() - Waiting for intercom.ready()');
 		intercom.ready(cb);
 	});
 
@@ -149,6 +160,7 @@ function ready(retries, cb) {
 
 	// Migrate database
 	tasks.push(function(cb) {
+		log.debug('larvitamsettings: index.js - ready() - Waiting for dbmigration()');
 		dbmigration(function(err) {
 			if (err) {
 				log.error('larvitamsettings: index.js: Database error: ' + err.message);
@@ -168,8 +180,10 @@ function ready(retries, cb) {
 		eventEmitter.emit('ready');
 
 		if (exports.mode === 'both' || exports.mode === 'master') {
+			log.debug('larvitamsettings: index.js - ready() - Starting dump server');
 			runDumpServer(cb);
 		} else {
+			log.debug('larvitamsettings: index.js - ready() - NOT running dump server');
 			cb();
 		}
 	});
