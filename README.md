@@ -20,10 +20,10 @@ const	settings	= require('larvitamsettings');
 
 settings.mode = 'master'; // Will make this instance the master of data, all other connected instances should be "slave" (default)
 
-settings.set('setting name', 'setting value - woho', function(err) {
+settings.set('setting name', 'setting value - woho', function (err) {
 	if (err) throw err;
 
-	settings.get('setting_name', function(err, settingValue) {
+	settings.get('setting_name', function (err, settingValue) {
 		if (err) throw err;
 
 		console.log(settingValue); // "setting value - woho"

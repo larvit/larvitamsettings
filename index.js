@@ -1,8 +1,9 @@
 'use strict';
 
-const	EventEmitter	= require('events').EventEmitter,
+const	topLogPrefix	= 'larvitamsettings: index.js - ',
+	EventEmitter	= require('events').EventEmitter,
 	eventEmitter	= new EventEmitter(),
-	dbmigration	= require('larvitdbmigration')({'tableName': 'setting_db_version', 'migrationScriptsPath': __dirname + '/dbmigration'}),
+	DbMigration	= require('larvitdbmigration'),
 	amsync	= require('larvitamsync'),
 	async	= require('async'),
 	log	= require('winston'),
@@ -13,7 +14,8 @@ let	readyInProgress	= false,
 	intercom;
 
 function listenToQueue(retries, cb) {
-	const	options	= {'exchange': exports.exchangeName},
+	const	logPrefix	= topLogPrefix + 'listenToQueue() - ',
+		options	= {'exchange': exports.exchangeName},
 		tasks	= [];
 
 	let	listenMethod;
@@ -24,7 +26,7 @@ function listenToQueue(retries, cb) {
 	}
 
 	if (typeof cb !== 'function') {
-		cb = function(){};
+		cb = function (){};
 	}
 
 	if (retries === undefined) {
@@ -35,12 +37,12 @@ function listenToQueue(retries, cb) {
 
 	if ( ! (intercom instanceof require('larvitamintercom')) && retries < 10) {
 		retries ++;
-		setTimeout(function() {
+		setTimeout(function () {
 			listenToQueue(retries, cb);
 		}, 50);
 		return;
 	} else if ( ! (intercom instanceof require('larvitamintercom'))) {
-		log.error('larvitamsettings: index.js - listenToQueue() - Intercom is not set!');
+		log.error(logPrefix + 'Intercom is not set!');
 		return;
 	}
 
@@ -54,35 +56,35 @@ function listenToQueue(retries, cb) {
 		listenMethod = 'subscribe';
 	} else {
 		const	err	= new Error('larvitutils.instances.intercom is not an instance of Intercom!');
-		log.error('larvitamsettings: index.js - listenToQueue() - ' + err.message);
+		log.error(logPrefix + err.message);
 		throw err;
 	}
 
-	log.info('larvitamsettings: index.js - listenToQueue() - listenMethod: ' + listenMethod);
+	log.info(logPrefix + 'listenMethod: ' + listenMethod);
 
-	tasks.push(function(cb) {
+	tasks.push(function (cb) {
 		intercom.ready(cb);
 	});
 
-	tasks.push(function(cb) {
-		intercom[listenMethod](options, function(message, ack, deliveryTag) {
-			exports.ready(function(err) {
+	tasks.push(function (cb) {
+		intercom[listenMethod](options, function (message, ack, deliveryTag) {
+			exports.ready(function (err) {
 				ack(err); // Ack first, if something goes wrong we log it and handle it manually
 
 				if (err) {
-					log.error('larvitamsettings: index.js - listenToQueue() - intercom.' + listenMethod + '() - exports.ready() returned err: ' + err.message);
+					log.error(logPrefix + 'intercom.' + listenMethod + '() - exports.ready() returned err: ' + err.message);
 					return;
 				}
 
 				if (typeof message !== 'object') {
-					log.error('larvitamsettings: index.js - listenToQueue() - intercom.' + listenMethod + '() - Invalid message received, is not an object! deliveryTag: "' + deliveryTag + '"');
+					log.error(logPrefix + 'intercom.' + listenMethod + '() - Invalid message received, is not an object! deliveryTag: "' + deliveryTag + '"');
 					return;
 				}
 
 				if (typeof exports[message.action] === 'function') {
 					exports[message.action](message.params, deliveryTag, message.uuid);
 				} else {
-					log.warn('larvitamsettings: index.js - listenToQueue() - intercom.' + listenMethod + '() - Unknown message.action received: "' + message.action + '"');
+					log.warn(logPrefix + 'intercom.' + listenMethod + '() - Unknown message.action received: "' + message.action + '"');
 				}
 			});
 		}, cb);
@@ -99,9 +101,10 @@ setImmediate(listenToQueue);
 
 // This is ran before each incoming message on the queue is handeled
 function ready(retries, cb) {
-	const	tasks	= [];
+	const	logPrefix	= topLogPrefix + 'ready() - ',
+		tasks	= [];
 
-	log.silly('larvitamsettings: index.js - ready() - Running');
+	log.silly(logPrefix + 'Running');
 
 	if (typeof retries === 'function') {
 		cb	= retries;
@@ -109,17 +112,17 @@ function ready(retries, cb) {
 	}
 
 	if (typeof cb !== 'function') {
-		cb = function(){};
+		cb = function (){};
 	}
 
 	if (isReady === true) {
-		log.silly('larvitamsettings: index.js - ready() - isReady === true');
+		log.silly(logPrefix + 'isReady === true');
 		cb();
 		return;
 	}
 
 	if (readyInProgress === true) {
-		log.debug('larvitamsettings: index.js - ready() - readyInProgress === true');
+		log.debug(logPrefix + 'readyInProgress === true');
 		eventEmitter.on('ready', cb);
 		return;
 	}
@@ -129,53 +132,64 @@ function ready(retries, cb) {
 	}
 
 	if ( ! (intercom instanceof require('larvitamintercom')) && retries < 10) {
-		log.debug('larvitamsettings: index.js - ready() - intercom is not an an instance of Intercom, retrying in 10ms');
+		log.debug(logPrefix + 'intercom is not an an instance of Intercom, retrying in 10ms');
 		retries ++;
-		setTimeout(function() {
+		setTimeout(function () {
 			ready(retries, cb);
 		}, 50);
 		return;
 	} else if ( ! (intercom instanceof require('larvitamintercom'))) {
 		const	err	= new Error('larvitutils.instances.intercom is not an instance of Intercom!');
-		log.error('larvitamsettings: index.js - ready() - ' + err.message);
+		log.error(logPrefix + '' + err.message);
 		throw err;
 	}
 
-	log.debug('larvitamsettings: index.js - ready() - intercom is an instance of Intercom, continuing.');
+	log.debug(logPrefix + 'intercom is an instance of Intercom, continuing.');
 
 	readyInProgress = true;
 
-	tasks.push(function(cb) {
-		log.debug('larvitamsettings: index.js - ready() - Waiting for intercom.ready()');
+	tasks.push(function (cb) {
+		log.debug(logPrefix + 'Waiting for intercom.ready()');
 		intercom.ready(cb);
 	});
 
 	if (exports.mode === 'both' || exports.mode === 'slave') {
 		log.verbose('larvitamsettings: index.js: exports.mode: "' + exports.mode + '", so read');
 
-		tasks.push(function(cb) {
+		tasks.push(function (cb) {
 			amsync.mariadb({'exchange': exports.exchangeName + '_dataDump'}, cb);
 		});
 
 	}
 
 	if (exports.mode === 'noSync') {
-		log.warn('larvitamsettings: index.js - exports.mode: "' + exports.mode + '", never run this mode in production!');
+		log.warn(topLogPrefix + 'exports.mode: "' + exports.mode + '", never run this mode in production!');
 	}
 
 	// Migrate database
-	tasks.push(function(cb) {
-		log.debug('larvitamsettings: index.js - ready() - Waiting for dbmigration()');
-		dbmigration(function(err) {
+	tasks.push(function (cb) {
+		const	options	= {};
+
+		let	dbMigration;
+
+		log.debug(logPrefix + 'Waiting for dbmigration()');
+
+		options.dbType	= 'larvitdb';
+		options.dbDriver	= db;
+		options.tableName	= 'setting_db_version';
+		options.migrationScriptsPath	= __dirname + '/dbmigration';
+		dbMigration	= new DbMigration(options);
+
+		dbMigration.run(function (err) {
 			if (err) {
-				log.error('larvitamsettings: index.js: Database error: ' + err.message);
+				log.error(topLogPrefix + err.message);
 			}
 
 			cb(err);
 		});
 	});
 
-	async.series(tasks, function(err) {
+	async.series(tasks, function (err) {
 		if (err) {
 			log.error('larvitamsettings: index.js: ready() - err: ' + err.message);
 			return;
@@ -185,10 +199,10 @@ function ready(retries, cb) {
 		eventEmitter.emit('ready');
 
 		if (exports.mode === 'both' || exports.mode === 'master') {
-			log.debug('larvitamsettings: index.js - ready() - Starting dump server');
+			log.debug(logPrefix + 'Starting dump server');
 			runDumpServer(cb);
 		} else {
-			log.debug('larvitamsettings: index.js - ready() - NOT running dump server');
+			log.debug(logPrefix + 'NOT running dump server');
 			cb();
 		}
 	});
@@ -229,15 +243,14 @@ function runDumpServer(cb) {
 }
 
 function get(settingName, cb) {
-	ready(function(err) {
-		if (err) { cb(err); return; }
+	ready(function (err) {
+		if (err) return cb(err);
 
-		db.query('SELECT content FROM settings WHERE name = ?', [settingName], function(err, rows) {
-			if (err) { cb(err); return; }
+		db.query('SELECT content FROM settings WHERE name = ?', [settingName], function (err, rows) {
+			if (err) return cb(err);
 
 			if (rows.length === 0) {
-				cb(null, null);
-				return;
+				return cb(null, null);
 			}
 
 			cb(null, rows[0].content);
@@ -246,19 +259,19 @@ function get(settingName, cb) {
 }
 
 function set(settingName, settingValue, cb) {
-	ready(function(err) {
+	ready(function (err) {
 		const	options	= {'exchange': exports.exchangeName},
 			message	= {};
 
-		if (err) { cb(err); return; }
+		if (err) return cb(err);
 
 		message.action	= 'writeToDb';
 		message.params	= {};
 		message.params.name	= settingName;
 		message.params.value	= settingValue;
 
-		intercom.send(message, options, function(err, msgUuid) {
-			if (err) { cb(err); return; }
+		intercom.send(message, options, function (err, msgUuid) {
+			if (err) return cb(err);
 
 			exports.emitter.once(msgUuid, cb);
 		});
@@ -266,7 +279,7 @@ function set(settingName, settingValue, cb) {
 }
 
 function writeToDb(params, deliveryTag, msgUuid) {
-	db.query('REPLACE INTO settings VALUES(?,?);', [params.name, params.value], function(err) {
+	db.query('REPLACE INTO settings VALUES(?,?);', [params.name, params.value], function (err) {
 		exports.emitter.emit(msgUuid, err);
 	});
 }

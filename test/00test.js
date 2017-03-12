@@ -20,12 +20,12 @@ log.remove(log.transports.Console);
 	'json':	false
 });/**/
 
-before(function(done) {
+before(function (done) {
 	this.timeout(10000);
 	const	tasks	= [];
 
 	// Run DB Setup
-	tasks.push(function(cb) {
+	tasks.push(function (cb) {
 		let confFile;
 
 		if (process.env.DBCONFFILE === undefined) {
@@ -37,12 +37,12 @@ before(function(done) {
 		log.verbose('DB config file: "' + confFile + '"');
 
 		// First look for absolute path
-		fs.stat(confFile, function(err) {
+		fs.stat(confFile, function (err) {
 			if (err) {
 
 				// Then look for this string in the config folder
 				confFile = __dirname + '/../config/' + confFile;
-				fs.stat(confFile, function(err) {
+				fs.stat(confFile, function (err) {
 					if (err) throw err;
 					log.verbose('DB config: ' + JSON.stringify(require(confFile)));
 					db.setup(require(confFile), cb);
@@ -57,8 +57,8 @@ before(function(done) {
 	});
 
 	// Check for empty db
-	tasks.push(function(cb) {
-		db.query('SHOW TABLES', function(err, rows) {
+	tasks.push(function (cb) {
+		db.query('SHOW TABLES', function (err, rows) {
 			if (err) throw err;
 
 			if (rows.length) {
@@ -70,7 +70,7 @@ before(function(done) {
 	});
 
 	// Setup intercom
-	tasks.push(function(cb) {
+	tasks.push(function (cb) {
 		let confFile;
 
 		if (process.env.INTCONFFILE === undefined) {
@@ -82,12 +82,12 @@ before(function(done) {
 		log.verbose('Intercom config file: "' + confFile + '"');
 
 		// First look for absolute path
-		fs.stat(confFile, function(err) {
+		fs.stat(confFile, function (err) {
 			if (err) {
 
 				// Then look for this string in the config folder
 				confFile = __dirname + '/../config/' + confFile;
-				fs.stat(confFile, function(err) {
+				fs.stat(confFile, function (err) {
 					if (err) throw err;
 					log.verbose('Intercom config: ' + JSON.stringify(require(confFile)));
 					lUtils.instances.intercom = new Intercom(require(confFile).default);
@@ -106,7 +106,7 @@ before(function(done) {
 	async.series(tasks, done);
 });
 
-describe('Settings', function() {
+describe('Settings', function () {
 	const	setting1Name	= 'fasdfdggg',
 		setting1Value	= '3299efkadf',
 		setting2Name	= 'obiobkbks',
@@ -114,11 +114,11 @@ describe('Settings', function() {
 
 	it('should return from the ready function', settings.ready);
 
-	it('should set a setting', function(done) {
-		settings.set(setting1Name, setting1Value, function(err) {
+	it('should set a setting', function (done) {
+		settings.set(setting1Name, setting1Value, function (err) {
 			if (err) throw err;
 
-			db.query('SELECT content FROM settings', function(err, rows) {
+			db.query('SELECT content FROM settings', function (err, rows) {
 				if (err) throw err;
 
 				assert.deepEqual(rows.length,	1);
@@ -129,11 +129,11 @@ describe('Settings', function() {
 		});
 	});
 
-	it('should set a second setting', function(done) {
-		settings.set(setting2Name, setting2Value, function(err) {
+	it('should set a second setting', function (done) {
+		settings.set(setting2Name, setting2Value, function (err) {
 			if (err) throw err;
 
-			db.query('SELECT * FROM settings', function(err, rows) {
+			db.query('SELECT * FROM settings', function (err, rows) {
 				let	hits	= 0;
 
 				if (err) throw err;
@@ -157,13 +157,13 @@ describe('Settings', function() {
 		});
 	});
 
-	it('should get settings', function(done) {
-		settings.get(setting1Name, function(err, result) {
+	it('should get settings', function (done) {
+		settings.get(setting1Name, function (err, result) {
 			if (err) throw err;
 
 			assert.deepEqual(result,	setting1Value);
 
-			settings.get(setting2Name, function(err, result) {
+			settings.get(setting2Name, function (err, result) {
 				if (err) throw err;
 
 				assert.deepEqual(result,	setting2Value);
@@ -174,6 +174,6 @@ describe('Settings', function() {
 	});
 });
 
-after(function(done) {
+after(function (done) {
 	db.removeAllTables(done);
 });
