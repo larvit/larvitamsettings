@@ -55,7 +55,7 @@ function listenToQueue(retries, cb) {
 	} else if (exports.mode === 'slave' || exports.mode === 'noSync') {
 		listenMethod = 'subscribe';
 	} else {
-		const	err	= new Error('larvitutils.instances.intercom is not an instance of Intercom!');
+		const	err	= new Error('Invalid exports.mode. Must be either "master" or "slave"');
 		log.error(logPrefix + err.message);
 		throw err;
 	}
