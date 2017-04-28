@@ -162,10 +162,6 @@ function ready(retries, cb) {
 
 	}
 
-	if (exports.mode === 'noSync') {
-		log.warn(topLogPrefix + 'exports.mode: "' + exports.mode + '", never run this mode in production!');
-	}
-
 	// Migrate database
 	tasks.push(function (cb) {
 		const	options	= {};
