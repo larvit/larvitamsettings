@@ -55,7 +55,7 @@ function listenToQueue(retries, cb) {
 	} else if (exports.mode === 'slave' || exports.mode === 'noSync') {
 		listenMethod = 'subscribe';
 	} else {
-		const	err	= new Error('Invalid exports.mode. Must be either "master" or "slave"');
+		const	err	= new Error('Invalid exports.mode. Must be either "master", "slave" or "noSync"');
 		log.error(logPrefix + err.message);
 		throw err;
 	}
