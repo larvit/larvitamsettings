@@ -1,6 +1,6 @@
 'use strict';
 
-const	topLogPrefix	= 'larvitamsettings: index.js - ',
+const	topLogPrefix	= 'larvitamsettings: index.js: ',
 	EventEmitter	= require('events').EventEmitter,
 	eventEmitter	= new EventEmitter(),
 	DbMigration	= require('larvitdbmigration'),
@@ -117,8 +117,7 @@ function ready(retries, cb) {
 
 	if (isReady === true) {
 		log.silly(logPrefix + 'isReady === true');
-		cb();
-		return;
+		return cb();
 	}
 
 	if (readyInProgress === true) {
@@ -159,7 +158,6 @@ function ready(retries, cb) {
 		tasks.push(function (cb) {
 			amsync.mariadb({'exchange': exports.exchangeName + '_dataDump'}, cb);
 		});
-
 	}
 
 	// Migrate database

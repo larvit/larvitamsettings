@@ -7,7 +7,6 @@ env:
 
 node_js:
   - 4
-  - 5
   - 6
   - 7
 
@@ -24,9 +23,6 @@ install:
   - npm i
   - sudo apt-get install -qq --no-install-recommends mariadb-client
 
-services:
-  - rabbitmq
-
 addons:
   mariadb: '10.1'
   apt:
@@ -38,4 +34,4 @@ addons:
 before_script:
   - mysql -e "create database IF NOT EXISTS test;" -uroot
 
-script: DBCONFFILE=db_travis.json INTCONFFILE=amqp_travis.json npm test
+script: DBCONFFILE=db_travis.json npm test
