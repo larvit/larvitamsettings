@@ -13,7 +13,7 @@ npm i --save larvitamsettings
 ## Usage
 
 Setting name is limited to 100 characters ASCII
-Setting value is limited to 65kb UTF-8
+Setting value is limited to ~65MB UTF-8
 
 ```javascript
 const	settings	= require('larvitamsettings');
