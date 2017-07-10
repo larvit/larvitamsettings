@@ -253,6 +253,10 @@ function get(settingName, cb) {
 }
 
 function set(settingName, settingValue, cb) {
+	if (typeof cb !== 'function') {
+		cb = function () {};
+	}
+
 	ready(function (err) {
 		const	options	= {'exchange': exports.exchangeName},
 			message	= {};
