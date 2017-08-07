@@ -153,7 +153,7 @@ function ready(retries, cb) {
 	});
 
 	if (exports.mode === 'both' || exports.mode === 'slave') {
-		log.verbose('larvitamsettings: index.js: exports.mode: "' + exports.mode + '", so read');
+		log.verbose(logPrefix + 'exports.mode: "' + exports.mode + '", so read');
 
 		tasks.push(function (cb) {
 			amsync.mariadb({'exchange': exports.exchangeName + '_dataDump'}, cb);
@@ -176,7 +176,7 @@ function ready(retries, cb) {
 
 		dbMigration.run(function (err) {
 			if (err) {
-				log.error(topLogPrefix + err.message);
+				log.error(logPrefix + err.message);
 			}
 
 			cb(err);
@@ -185,7 +185,7 @@ function ready(retries, cb) {
 
 	async.series(tasks, function (err) {
 		if (err) {
-			log.error('larvitamsettings: index.js: ready() - err: ' + err.message);
+			log.error(logPrefix + 'err: ' + err.message);
 			return;
 		}
 
