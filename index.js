@@ -49,9 +49,9 @@ function listenToQueue(retries, cb) {
 	if (exports.mode === 'master') {
 		listenMethod	= 'consume';
 		options.exclusive	= true;	// It is important no other client tries to sneak
-				// out messages from us, and we want "consume"
-				// since we want the queue to persist even if this
-				// minion goes offline.
+		;		// out messages from us, and we want "consume"
+		;		// since we want the queue to persist even if this
+		;		// minion goes offline.
 	} else if (exports.mode === 'slave' || exports.mode === 'noSync') {
 		listenMethod = 'subscribe';
 	} else {
@@ -277,8 +277,19 @@ function set(settingName, settingValue, cb) {
 }
 
 function writeToDb(params, deliveryTag, msgUuid) {
-	db.query('REPLACE INTO settings VALUES(?,?);', [params.name, params.value], function (err) {
-		exports.emitter.emit(msgUuid, err);
+	const	logPrefix	= topLogPrefix + 'writeToDb() - ';
+
+	get(params.name, function (err, prevValue) {
+		if (err) return exports.emitter.emit(msgUuid, err);
+
+		if (prevValue === params.value) {
+			log.debug(logPrefix + 'source value is the same as target value, do not write to db');
+			return exports.emitter.emit(msgUuid, err);
+		}
+
+		db.query('REPLACE INTO settings VALUES(?,?);', [params.name, params.value], function (err) {
+			exports.emitter.emit(msgUuid, err);
+		});
 	});
 }
 

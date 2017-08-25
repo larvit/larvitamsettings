@@ -82,7 +82,8 @@ describe('Settings', function () {
 	const	setting1Name	= 'fasdfdggg',
 		setting1Value	= '3299efkadf',
 		setting2Name	= 'obiobkbks',
-		setting2Value	= '999f2ekfdfdd';
+		setting2Value	= '999f2ekfdfdd',
+		setting2Value2	= 'blirk';
 
 	it('should return from the ready function', settings.ready);
 
@@ -139,6 +140,63 @@ describe('Settings', function () {
 				if (err) throw err;
 
 				assert.deepEqual(result,	setting2Value);
+
+				done();
+			});
+		});
+	});
+
+	it('should reset the second setting without change', function (done) {
+		settings.set(setting2Name, setting2Value, function (err) {
+			if (err) throw err;
+
+			db.query('SELECT * FROM settings', function (err, rows) {
+				let	hits	= 0;
+
+				if (err) throw err;
+
+				assert.deepEqual(rows.length,	2);
+
+				for (let i = 0; rows[i] !== undefined; i ++) {
+					if (rows[i].name === setting2Name) {
+						hits ++;
+						assert.deepEqual(rows[i].content,	setting2Value);
+					} else {
+						assert.deepEqual(rows[i].name,	setting1Name);
+						assert.deepEqual(rows[i].content,	setting1Value);
+					}
+				}
+
+				assert.deepEqual(hits, 1);
+
+				done();
+			});
+		});
+
+	});
+
+	it('should reset the second setting WITH change', function (done) {
+		settings.set(setting2Name, setting2Value2, function (err) {
+			if (err) throw err;
+
+			db.query('SELECT * FROM settings', function (err, rows) {
+				let	hits	= 0;
+
+				if (err) throw err;
+
+				assert.deepEqual(rows.length,	2);
+
+				for (let i = 0; rows[i] !== undefined; i ++) {
+					if (rows[i].name === setting2Name) {
+						hits ++;
+						assert.deepEqual(rows[i].content,	setting2Value2);
+					} else {
+						assert.deepEqual(rows[i].name,	setting1Name);
+						assert.deepEqual(rows[i].content,	setting1Value);
+					}
+				}
+
+				assert.deepEqual(hits, 1);
 
 				done();
 			});
