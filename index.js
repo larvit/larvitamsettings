@@ -4,14 +4,15 @@ const	topLogPrefix	= 'larvitamsettings: index.js: ',
 	EventEmitter	= require('events').EventEmitter,
 	eventEmitter	= new EventEmitter(),
 	DbMigration	= require('larvitdbmigration'),
+	Intercom	= require('larvitamintercom'),
+	checkKey	= require('check-object-key'),
 	amsync	= require('larvitamsync'),
 	async	= require('async'),
 	log	= require('winston'),
 	db	= require('larvitdb');
 
 let	readyInProgress	= false,
-	isReady	= false,
-	intercom;
+	isReady	= false;
 
 function listenToQueue(retries, cb) {
 	const	logPrefix	= topLogPrefix + 'listenToQueue() - ',
@@ -33,41 +34,52 @@ function listenToQueue(retries, cb) {
 		retries = 0;
 	}
 
-	intercom	= require('larvitutils').instances.intercom;
-
-	if ( ! (intercom instanceof require('larvitamintercom')) && retries < 10) {
-		retries ++;
-		setTimeout(function () {
-			listenToQueue(retries, cb);
-		}, 50);
-		return;
-	} else if ( ! (intercom instanceof require('larvitamintercom'))) {
-		log.error(logPrefix + 'Intercom is not set!');
-		return;
-	}
-
-	if (exports.mode === 'master') {
-		listenMethod	= 'consume';
-		options.exclusive	= true;	// It is important no other client tries to sneak
-		;		// out messages from us, and we want "consume"
-		;		// since we want the queue to persist even if this
-		;		// minion goes offline.
-	} else if (exports.mode === 'slave' || exports.mode === 'noSync') {
-		listenMethod = 'subscribe';
-	} else {
-		const	err	= new Error('Invalid exports.mode. Must be either "master", "slave" or "noSync"');
-		log.error(logPrefix + err.message);
-		throw err;
-	}
-
-	log.info(logPrefix + 'listenMethod: ' + listenMethod);
-
 	tasks.push(function (cb) {
-		intercom.ready(cb);
+		checkKey({
+			'obj':	exports,
+			'objectKey':	'mode',
+			'validValues':	['master', 'slave', 'noSync'],
+			'default':	'noSync'
+		}, function (err, warning) {
+			if (warning) log.warn(logPrefix + warning);
+			cb(err);
+		});
 	});
 
 	tasks.push(function (cb) {
-		intercom[listenMethod](options, function (message, ack, deliveryTag) {
+		checkKey({
+			'obj':	exports,
+			'objectKey':	'intercom',
+			'default':	new Intercom('loopback interface'),
+			'defaultLabel':	'loopback interface'
+		}, function (err, warning) {
+			if (warning) log.warn(logPrefix + warning);
+			cb(err);
+		});
+	});
+
+	tasks.push(function (cb) {
+		if (exports.mode === 'master') {
+			listenMethod	= 'consume';
+			options.exclusive	= true;	// It is important no other client tries to sneak
+			//		// out messages from us, and we want "consume"
+			//		// since we want the queue to persist even if this
+			//		// minion goes offline.
+		} else if (exports.mode === 'slave' || exports.mode === 'noSync') {
+			listenMethod = 'subscribe';
+		} else {
+			const	err	= new Error('Invalid exports.mode. Must be either "master", "slave" or "noSync"');
+			log.error(logPrefix + err.message);
+			throw err;
+		}
+
+		log.info(logPrefix + 'listenMethod: ' + listenMethod);
+
+		cb();
+	});
+
+	tasks.push(function (cb) {
+		exports.intercom[listenMethod](options, function (message, ack, deliveryTag) {
 			exports.ready(function (err) {
 				ack(err); // Ack first, if something goes wrong we log it and handle it manually
 
@@ -100,7 +112,7 @@ function listenToQueue(retries, cb) {
 setImmediate(listenToQueue);
 
 // This is ran before each incoming message on the queue is handeled
-function ready(retries, cb) {
+function ready(cb) {
 	const	logPrefix	= topLogPrefix + 'ready() - ',
 		tasks	= [];
 
@@ -126,37 +138,45 @@ function ready(retries, cb) {
 		return;
 	}
 
-	if (retries === undefined) {
-		retries = 0;
-	}
-
-	if ( ! (intercom instanceof require('larvitamintercom')) && retries < 10) {
-		log.debug(logPrefix + 'intercom is not an an instance of Intercom, retrying in 10ms');
-		retries ++;
-		setTimeout(function () {
-			ready(retries, cb);
-		}, 50);
-		return;
-	} else if ( ! (intercom instanceof require('larvitamintercom'))) {
-		const	err	= new Error('larvitutils.instances.intercom is not an instance of Intercom!');
-		log.error(logPrefix + '' + err.message);
-		throw err;
-	}
-
-	log.debug(logPrefix + 'intercom is an instance of Intercom, continuing.');
-
 	readyInProgress = true;
 
 	tasks.push(function (cb) {
+		checkKey({
+			'obj':	exports,
+			'objectKey':	'mode',
+			'validValues':	['master', 'slave', 'noSync'],
+			'default':	'noSync'
+		}, function (err, warning) {
+			if (warning) log.warn(logPrefix + warning);
+			cb(err);
+		});
+	});
+
+	tasks.push(function (cb) {
+		checkKey({
+			'obj':	exports,
+			'objectKey':	'intercom',
+			'default':	new Intercom('loopback interface'),
+			'defaultLabel':	'loopback interface'
+		}, function (err, warning) {
+			if (warning) log.warn(logPrefix + warning);
+			cb(err);
+		});
+	});
+
+	tasks.push(function (cb) {
 		log.debug(logPrefix + 'Waiting for intercom.ready()');
-		intercom.ready(cb);
+		exports.intercom.ready(cb);
 	});
 
 	if (exports.mode === 'both' || exports.mode === 'slave') {
 		log.verbose(logPrefix + 'exports.mode: "' + exports.mode + '", so read');
 
 		tasks.push(function (cb) {
-			amsync.mariadb({'exchange': exports.exchangeName + '_dataDump'}, cb);
+			amsync.mariadb({
+				'exchange':	exports.exchangeName + '_dataDump',
+				'intercom':	exports.Intercom
+			}, cb);
 		});
 	}
 
@@ -231,7 +251,8 @@ function runDumpServer(cb) {
 		'args':	args
 	};
 
-	options['Content-Type'] = 'application/sql';
+	options['Content-Type']	= 'application/sql';
+	options.intercom	= exports.intercom;
 
 	new amsync.SyncServer(options, cb);
 }
@@ -268,7 +289,7 @@ function set(settingName, settingValue, cb) {
 		message.params.name	= settingName;
 		message.params.value	= settingValue;
 
-		intercom.send(message, options, function (err, msgUuid) {
+		exports.intercom.send(message, options, function (err, msgUuid) {
 			if (err) return cb(err);
 
 			exports.emitter.once(msgUuid, cb);

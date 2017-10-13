@@ -1,15 +1,13 @@
 'use strict';
 
 const	Intercom	= require('larvitamintercom'),
-	settings	= require(__dirname + '/../index.js'),
 	assert	= require('assert'),
-	lUtils	= require('larvitutils'),
 	async	= require('async'),
 	log	= require('winston'),
 	db	= require('larvitdb'),
 	fs	= require('fs');
 
-settings.mode = 'master';
+let	settings;
 
 // Set up winston
 log.remove(log.transports.Console);
@@ -69,10 +67,12 @@ before(function (done) {
 		});
 	});
 
-	// Setup intercom
+	// Setup lib
 	tasks.push(function (cb) {
-		lUtils.instances.intercom = new Intercom('loopback interface');
-		lUtils.instances.intercom.on('ready', cb);
+		settings	= require(__dirname + '/../index.js');
+		settings.mode	= 'master';
+		settings.intercom	= new Intercom('loopback interface');
+		settings.ready(cb);
 	});
 
 	async.series(tasks, done);
@@ -84,8 +84,6 @@ describe('Settings', function () {
 		setting2Name	= 'obiobkbks',
 		setting2Value	= '999f2ekfdfdd',
 		setting2Value2	= 'blirk';
-
-	it('should return from the ready function', settings.ready);
 
 	it('should set a setting', function (done) {
 		settings.set(setting1Name, setting1Value, function (err) {
