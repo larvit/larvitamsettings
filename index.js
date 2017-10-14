@@ -175,7 +175,7 @@ function ready(cb) {
 		tasks.push(function (cb) {
 			amsync.mariadb({
 				'exchange':	exports.exchangeName + '_dataDump',
-				'intercom':	exports.Intercom
+				'intercom':	exports.intercom
 			}, cb);
 		});
 	}
