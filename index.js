@@ -8,6 +8,7 @@ const	topLogPrefix	= 'larvitamsettings: index.js: ',
 	checkKey	= require('check-object-key'),
 	amsync	= require('larvitamsync'),
 	async	= require('async'),
+	that	= this,
 	log	= require('winston'),
 	db	= require('larvitdb');
 
@@ -143,6 +144,17 @@ function ready(cb) {
 	tasks.push(function (cb) {
 		checkKey({
 			'obj':	exports,
+			'objectKey':	'options',
+			'default':	{}
+		}, function (err, warning) {
+			if (warning) log.warn(logPrefix + warning);
+			cb(err);
+		});
+	});
+
+	tasks.push(function (cb) {
+		checkKey({
+			'obj':	exports,
 			'objectKey':	'mode',
 			'validValues':	['master', 'slave', 'noSync'],
 			'default':	'noSync'
@@ -223,7 +235,14 @@ function ready(cb) {
 }
 
 function runDumpServer(cb) {
-	const	options	= {'exchange': exports.exchangeName + '_dataDump'},
+	const	options	= {
+			'exchange': exports.exchangeName + '_dataDump',
+			'amsync': {
+				'host': that.options.amsync ? that.options.amsync.host : null,
+				'minPort': that.options.amsync ? that.options.amsync.minPort : null,
+				'maxPort': that.options.amsync ? that.options.amsync.maxPort : null
+			}
+		},
 		args	= [];
 
 	if (db.conf.host) {
@@ -318,6 +337,7 @@ exports.emitter	= new EventEmitter();
 exports.exchangeName	= 'larvitamsettings';
 exports.get	= get;
 exports.listenToQueue	= listenToQueue;
+exports.options	= undefined;
 exports.mode	= 'notSet'; // "slave" or "master"
 exports.ready	= ready;
 exports.set	= set;
