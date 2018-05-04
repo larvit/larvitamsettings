@@ -19,6 +19,8 @@ Setting value is limited to ~65MB UTF-8
 const	settings	= require('larvitamsettings');
 
 settings.mode = 'master'; // Will make this instance the master of data, all other connected instances should be "slave" (default)
+settings.intercom = new require('larvitamintercom')('loopback interface');
+settings.amsync = {'host': null, 'minPort': null, 'maxPort': null};
 
 settings.set('setting name', 'setting value - woho', function (err) {
 	if (err) throw err;
