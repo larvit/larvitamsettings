@@ -169,16 +169,18 @@ function ready(cb) {
 		exports.intercom.ready(cb);
 	});
 
-	if (exports.mode === 'both' || exports.mode === 'slave') {
-		log.verbose(logPrefix + 'exports.mode: "' + exports.mode + '", so read');
+	tasks.push(function (cb) {
+		if (exports.mode === 'both' || exports.mode === 'slave') {
+			log.verbose(logPrefix + 'exports.mode: "' + exports.mode + '", so read');
 
-		tasks.push(function (cb) {
 			amsync.mariadb({
 				'exchange':	exports.exchangeName + '_dataDump',
 				'intercom':	exports.intercom
 			}, cb);
-		});
-	}
+		} else {
+			cb();
+		}
+	});
 
 	// Migrate database
 	tasks.push(function (cb) {
