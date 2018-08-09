@@ -10,6 +10,7 @@ node_js:
   - 7
   - 8
   - 9
+  - 10
 
 notifications:
   email:
@@ -25,7 +26,7 @@ install:
   - sudo apt-get install -qq --no-install-recommends mariadb-client
 
 addons:
-  mariadb: '10.1'
+  mariadb: '10.3'
   apt:
     sources:
     - ubuntu-toolchain-r-test

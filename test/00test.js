@@ -1,22 +1,16 @@
 'use strict';
 
 const	Intercom	= require('larvitamintercom'),
+	Settings = require(__dirname + '/../index.js'),
 	assert	= require('assert'),
 	async	= require('async'),
-	log	= require('winston'),
+	utils	= new (require('larvitutils'))(),
+	log	= new utils.Log('warning'),
 	db	= require('larvitdb'),
 	fs	= require('fs');
 
-let	settings;
-
-// Set up winston
-log.remove(log.transports.Console);
-/**/log.add(log.transports.Console, {
-	'level':	'warn',
-	'colorize':	true,
-	'timestamp':	true,
-	'json':	false
-});/**/
+let options,
+	settings;
 
 before(function (done) {
 	this.timeout(10000);
@@ -67,12 +61,15 @@ before(function (done) {
 		});
 	});
 
-	// Setup lib
 	tasks.push(function (cb) {
-		settings	= require(__dirname + '/../index.js');
-		settings.mode	= 'master';
-		settings.intercom	= new Intercom('loopback interface');
-		settings.ready(cb);
+		options = {
+			'mode': 'master',
+			'intercom': new Intercom('loopback interface'),
+			'log': log,
+			'db': db
+		};
+
+		settings = new Settings(options, cb);
 	});
 
 	async.series(tasks, done);
