@@ -151,6 +151,7 @@ DataWriter.prototype.ready = function ready(retries, cb) {
 		options.dbDriver	= that.db;
 		options.tableName	= 'setting_db_version';
 		options.migrationScriptsPath	= __dirname + '/dbmigration';
+		options.log	= that.log;
 		dbMigration	= new DbMigration(options);
 
 		dbMigration.run(function (err) {

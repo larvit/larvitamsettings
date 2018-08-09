@@ -30,6 +30,8 @@ before(function (done) {
 
 		// First look for absolute path
 		fs.stat(confFile, function (err) {
+			let conf;
+
 			if (err) {
 
 				// Then look for this string in the config folder
@@ -37,14 +39,19 @@ before(function (done) {
 				fs.stat(confFile, function (err) {
 					if (err) throw err;
 					log.verbose('DB config: ' + JSON.stringify(require(confFile)));
-					db.setup(require(confFile), cb);
+
+					conf = require(confFile);
+					conf.log = log;
+					db.setup(conf, cb);
 				});
 
 				return;
 			}
 
 			log.verbose('DB config: ' + JSON.stringify(require(confFile)));
-			db.setup(require(confFile), cb);
+			conf = require(confFile);
+			conf.log = log;
+			db.setup(conf, cb);
 		});
 	});
 
