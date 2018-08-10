@@ -30,6 +30,6 @@
     "async": "^2.6.1",
     "larvitamintercom": "^0.2.14",
     "larvitamsync": "^0.6.0",
-    "larvitdbmigration": "^2.0.0"
+    "larvitdbmigration": "^4.0.0"
   }
 }
