@@ -28,7 +28,7 @@
   },
   "dependencies": {
     "async": "^2.6.1",
-    "larvitamintercom": "^0.2.14",
+    "larvitamintercom": "^0.3.0",
     "larvitamsync": "^0.6.0",
     "larvitdbmigration": "^2.0.0"
   }
