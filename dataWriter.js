@@ -147,7 +147,7 @@ DataWriter.prototype.ready = function ready(retries, cb) {
 
 		that.log.debug(logPrefix + 'Waiting for dbmigration()');
 
-		options.dbType	= 'larvitdb';
+		options.dbType	= 'mariadb';
 		options.dbDriver	= that.db;
 		options.tableName	= 'setting_db_version';
 		options.migrationScriptsPath	= __dirname + '/dbmigration';
@@ -219,6 +219,7 @@ DataWriter.prototype.runDumpServer = function runDumpServer(cb) {
 
 	options['Content-Type']	= 'application/sql';
 	options.intercom	= that.intercom;
+	options.log	= that.log;
 
 	new amsync.SyncServer(options, cb);
 };
