@@ -24,7 +24,7 @@
     "mocha": "5.2.0",
     "mocha-eslint": "4.1.0",
     "larvitdb": "2.1.0",
-    "larvitutils": "2.0.0"
+    "larvitutils": "2.1.0"
   },
   "dependencies": {
     "async": "^2.6.1",
