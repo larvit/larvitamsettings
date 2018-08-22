@@ -23,7 +23,7 @@ function Settings(options, cb) {
 	}
 
 	if ( ! that.options.mode) {
-		options.info(logPrefix + 'No "mode" option given, defaulting to "noSync"');
+		options.log.info(logPrefix + 'No "mode" option given, defaulting to "noSync"');
 		that.options.mode	= 'noSync';
 	} else if (['noSync', 'master', 'slave'].indexOf(that.options.mode) === - 1) {
 		const	err	= new Error('Invalid "mode" option given: "' + that.options.mode + '"');
