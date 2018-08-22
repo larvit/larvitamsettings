@@ -1,6 +1,7 @@
 'use strict';
 
 const	topLogPrefix	= 'larvitamsettings: index.js: ',
+	Intercom	= require('larvitamintercom'),
 	DataWriter	= require(__dirname + '/dataWriter.js');
 
 function Settings(options, cb) {
