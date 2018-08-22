@@ -23,16 +23,16 @@ function Settings(options, cb) {
 	}
 
 	if ( ! that.options.mode) {
-		that.log.info(logPrefix + 'No "mode" option given, defaulting to "noSync"');
+		options.info(logPrefix + 'No "mode" option given, defaulting to "noSync"');
 		that.options.mode	= 'noSync';
 	} else if (['noSync', 'master', 'slave'].indexOf(that.options.mode) === - 1) {
 		const	err	= new Error('Invalid "mode" option given: "' + that.options.mode + '"');
-		that.log.error(logPrefix + err.message);
+		options.log.error(logPrefix + err.message);
 		throw err;
 	}
 
 	if ( ! that.options.intercom) {
-		that.log.info(logPrefix + 'No "intercom" option given, defaulting to "loopback interface"');
+		options.log.info(logPrefix + 'No "intercom" option given, defaulting to "loopback interface"');
 		that.options.intercom	= new Intercom('loopback interface');
 	}
 
