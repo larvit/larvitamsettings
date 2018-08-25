@@ -1,20 +1,22 @@
 'use strict';
 
-const	Intercom	= require('larvitamintercom'),
-	Settings = require(__dirname + '/../index.js'),
-	assert	= require('assert'),
-	async	= require('async'),
-	utils	= new (require('larvitutils'))(),
-	log	= new utils.Log('warning'),
-	db	= require('larvitdb'),
-	fs	= require('fs');
+const Intercom = require('larvitamintercom');
+const Settings = require(__dirname + '/../index.js');
+const assert   = require('assert');
+const LUtils   = require('larvitutils');
+const lUtils   = new LUtils();
+const async    = require('async');
+const log      = new lUtils.Log('warning');
+const db       = require('larvitdb');
+const fs       = require('fs');
 
-let options,
-	settings;
+let options;
+let settings;
 
 before(function (done) {
 	this.timeout(10000);
-	const	tasks	= [];
+
+	const tasks = [];
 
 	// Run DB Setup
 	tasks.push(function (cb) {
@@ -32,15 +34,14 @@ before(function (done) {
 		fs.stat(confFile, function (err) {
 			let conf;
 
+			// If err, then look for this string in the config folder
 			if (err) {
-
-				// Then look for this string in the config folder
 				confFile = __dirname + '/../config/' + confFile;
 				fs.stat(confFile, function (err) {
 					if (err) throw err;
 					log.verbose('DB config: ' + JSON.stringify(require(confFile)));
 
-					conf = require(confFile);
+					conf     = require(confFile);
 					conf.log = log;
 					db.setup(conf, cb);
 				});
@@ -49,7 +50,7 @@ before(function (done) {
 			}
 
 			log.verbose('DB config: ' + JSON.stringify(require(confFile)));
-			conf = require(confFile);
+			conf     = require(confFile);
 			conf.log = log;
 			db.setup(conf, cb);
 		});
@@ -70,10 +71,10 @@ before(function (done) {
 
 	tasks.push(function (cb) {
 		options = {
-			'mode': 'master',
+			'mode':     'master',
 			'intercom': new Intercom('loopback interface'),
-			'log': log,
-			'db': db
+			'log':      log,
+			'db':       db
 		};
 
 		settings = new Settings(options, cb);
@@ -83,11 +84,11 @@ before(function (done) {
 });
 
 describe('Settings', function () {
-	const	setting1Name	= 'fasdfdggg',
-		setting1Value	= '3299efkadf',
-		setting2Name	= 'obiobkbks',
-		setting2Value	= '999f2ekfdfdd',
-		setting2Value2	= 'blirk';
+	const setting1Name   = 'fasdfdggg';
+	const setting1Value  = '3299efkadf';
+	const setting2Name   = 'obiobkbks';
+	const setting2Value  = '999f2ekfdfdd';
+	const setting2Value2 = 'blirk';
 
 	it('should set a setting', function (done) {
 		settings.set(setting1Name, setting1Value, function (err) {
@@ -96,8 +97,8 @@ describe('Settings', function () {
 			db.query('SELECT content FROM settings', function (err, rows) {
 				if (err) throw err;
 
-				assert.deepEqual(rows.length,	1);
-				assert.deepEqual(rows[0].content,	setting1Value);
+				assert.deepEqual(rows.length,     1);
+				assert.deepEqual(rows[0].content, setting1Value);
 
 				done();
 			});
@@ -109,19 +110,19 @@ describe('Settings', function () {
 			if (err) throw err;
 
 			db.query('SELECT * FROM settings', function (err, rows) {
-				let	hits	= 0;
+				let hits = 0;
 
 				if (err) throw err;
 
-				assert.deepEqual(rows.length,	2);
+				assert.deepEqual(rows.length, 2);
 
 				for (let i = 0; rows[i] !== undefined; i ++) {
 					if (rows[i].name === setting2Name) {
 						hits ++;
-						assert.deepEqual(rows[i].content,	setting2Value);
+						assert.deepEqual(rows[i].content, setting2Value);
 					} else {
-						assert.deepEqual(rows[i].name,	setting1Name);
-						assert.deepEqual(rows[i].content,	setting1Value);
+						assert.deepEqual(rows[i].name,    setting1Name);
+						assert.deepEqual(rows[i].content, setting1Value);
 					}
 				}
 
@@ -136,12 +137,12 @@ describe('Settings', function () {
 		settings.get(setting1Name, function (err, result) {
 			if (err) throw err;
 
-			assert.deepEqual(result,	setting1Value);
+			assert.deepEqual(result, setting1Value);
 
 			settings.get(setting2Name, function (err, result) {
 				if (err) throw err;
 
-				assert.deepEqual(result,	setting2Value);
+				assert.deepEqual(result, setting2Value);
 
 				done();
 			});
@@ -153,19 +154,19 @@ describe('Settings', function () {
 			if (err) throw err;
 
 			db.query('SELECT * FROM settings', function (err, rows) {
-				let	hits	= 0;
+				let hits = 0;
 
 				if (err) throw err;
 
-				assert.deepEqual(rows.length,	2);
+				assert.deepEqual(rows.length, 2);
 
 				for (let i = 0; rows[i] !== undefined; i ++) {
 					if (rows[i].name === setting2Name) {
 						hits ++;
-						assert.deepEqual(rows[i].content,	setting2Value);
+						assert.deepEqual(rows[i].content, setting2Value);
 					} else {
-						assert.deepEqual(rows[i].name,	setting1Name);
-						assert.deepEqual(rows[i].content,	setting1Value);
+						assert.deepEqual(rows[i].name,    setting1Name);
+						assert.deepEqual(rows[i].content, setting1Value);
 					}
 				}
 
@@ -174,7 +175,6 @@ describe('Settings', function () {
 				done();
 			});
 		});
-
 	});
 
 	it('should reset the second setting WITH change', function (done) {
@@ -182,19 +182,19 @@ describe('Settings', function () {
 			if (err) throw err;
 
 			db.query('SELECT * FROM settings', function (err, rows) {
-				let	hits	= 0;
+				let hits = 0;
 
 				if (err) throw err;
 
-				assert.deepEqual(rows.length,	2);
+				assert.deepEqual(rows.length, 2);
 
 				for (let i = 0; rows[i] !== undefined; i ++) {
 					if (rows[i].name === setting2Name) {
 						hits ++;
-						assert.deepEqual(rows[i].content,	setting2Value2);
+						assert.deepEqual(rows[i].content, setting2Value2);
 					} else {
-						assert.deepEqual(rows[i].name,	setting1Name);
-						assert.deepEqual(rows[i].content,	setting1Value);
+						assert.deepEqual(rows[i].name,    setting1Name);
+						assert.deepEqual(rows[i].content, setting1Value);
 					}
 				}
 

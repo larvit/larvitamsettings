@@ -7,7 +7,7 @@ Share settings between microservices. Database driven, shared using RabbitMQ wit
 ## Installation
 
 ```bash
-npm i --save larvitamsettings
+npm i larvitamsettings
 ```
 
 ## Usage
@@ -16,11 +16,18 @@ Setting name is limited to 100 characters ASCII
 Setting value is limited to ~65MB UTF-8
 
 ```javascript
-const	settings	= require('larvitamsettings');
+const Settings = require('larvitamsettings');
 
-settings.mode = 'master'; // Will make this instance the master of data, all other connected instances should be "slave" (default)
-settings.intercom = new require('larvitamintercom')('loopback interface');
-settings.amsync = {'host': null, 'minPort': null, 'maxPort': null};
+const settings = new Settings({
+	'db': require('larvitdb'), // See https://github.com/larvit/larvitdb for configuration details
+
+	// OPTIONAL
+	'mode':           'noSync', // Other options is "master" and "slave" that will sync settings between database instances over the intercom
+	'intercom':       new require('larvitamintercom')('loopback interface'),
+	'amsync_host':    null,
+	'amsync_minPort': null,
+	'amsync_maxPort': null
+});
 
 settings.set('setting name', 'setting value - woho', function (err) {
 	if (err) throw err;

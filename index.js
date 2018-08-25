@@ -1,51 +1,82 @@
 'use strict';
 
-const	topLogPrefix	= 'larvitamsettings: index.js: ',
-	Intercom	= require('larvitamintercom'),
-	DataWriter	= require(__dirname + '/dataWriter.js');
+const topLogPrefix = 'larvitamsettings: index.js: ';
+const DataWriter   = require(__dirname + '/dataWriter.js');
+const Intercom     = require('larvitamintercom');
+const LUtils       = require('larvitutils');
 
+/**
+ * Module main constructor
+ *
+ * @param {obj}  options - {db, log, exchangeName, mode, intercom, db, amsync_host, amsync_minPort, amsync_maxPort}
+ * @param {func} cb      - callback(err)
+ * @returns {obj}        - instance of this
+ */
 function Settings(options, cb) {
-	const logPrefix = topLogPrefix + 'Settings() - ',
-		that = this;
+	const logPrefix = topLogPrefix + 'Settings() - ';
+	const that = this;
 
-	that.options	= options || {};
-
-	if ( ! that.options.db) {
-		throw new Error('Required option db is missing');
-	}
-	that.db	= that.options.db;
-
-	if ( ! that.options.log) {
-		that.options.log	= new lUtils.Log();
+	if (typeof options === 'function') {
+		cb      = options;
+		options = {};
 	}
 
-	if ( ! that.options.exchangeName) {
+	if (! typeof cb === 'function') {
+		cb = function () {};
+	}
+
+	that.options = options || {};
+
+	if (! that.options.log) {
+		const lUtils = new LUtils();
+
+		that.options.log = new lUtils.Log();
+	}
+	that.log = that.options.log;
+
+	if (! that.options.db) {
+		const err = new Error('Required option "db" is missing');
+
+		that.log.error(logPrefix + err.message);
+		cb(err);
+
+		return that;
+	}
+
+	if (! that.options.exchangeName) {
 		that.options.exchangeName	= 'larvitamsettings';
 	}
 
-	if ( ! that.options.mode) {
+	if (! that.options.mode) {
 		options.log.info(logPrefix + 'No "mode" option given, defaulting to "noSync"');
-		that.options.mode	= 'noSync';
+		that.options.mode = 'noSync';
 	} else if (['noSync', 'master', 'slave'].indexOf(that.options.mode) === - 1) {
-		const	err	= new Error('Invalid "mode" option given: "' + that.options.mode + '"');
-		options.log.error(logPrefix + err.message);
-		throw err;
+		const	err	= new Error('Invalid "mode" option given: "' + that.options.mode + '", must be one of "noSync", "master" or "slave"');
+
+		that.log.error(logPrefix + err.message);
+		cb(err);
+
+		return that;
 	}
 
-	if ( ! that.options.intercom) {
-		options.log.info(logPrefix + 'No "intercom" option given, defaulting to "loopback interface"');
-		that.options.intercom	= new Intercom('loopback interface');
+	if (! that.options.intercom) {
+		that.log.info(logPrefix + 'No "intercom" option given, defaulting to "loopback interface"');
+		that.options.intercom = new Intercom('loopback interface');
+	}
+
+	for (const key of Object.keys(that.options)) {
+		that[key] = that.options[key];
 	}
 
 	that.dataWriter	= new DataWriter({
-		'exchangeName':	that.options.exchangeName,
-		'intercom':	that.options.intercom,
-		'mode':	that.options.mode,
-		'log':	that.options.log,
-		'db':	that.db,
-		'amsync_host':	that.options.amsync_host || null,
-		'amsync_minPort':	that.options.amsync_minPort || null,
-		'amsync_maxPort':	that.options.amsync_maxPort || null
+		'exchangeName':   that.exchangeName,
+		'intercom':       that.intercom,
+		'mode':           that.mode,
+		'log':            that.log,
+		'db':             that.db,
+		'amsync_host':    that.amsync_host || null,
+		'amsync_minPort': that.amsync_minPort || null,
+		'amsync_maxPort': that.amsync_maxPort || null
 	}, cb);
 };
 
@@ -64,27 +95,28 @@ Settings.prototype.get = function get(settingName, cb) {
 };
 
 Settings.prototype.set = function set(settingName, settingValue, cb) {
-	const that = this,
-		logPrefix = topLogPrefix + 'set() - ';
+	const logPrefix = topLogPrefix + 'set() - ';
+	const that      = this;
 
 	if (typeof cb !== 'function') {
 		cb = function () {};
 	}
 
 	that.get(settingName, function (err, prevValue) {
-		const	options	= {'exchange': that.options.exchangeName},
-			message	= {
-				'action': 'writeToDb',
-				'params': {
-					'name': settingName,
-					'value': settingValue
-				}
-			};	
+		const options = {'exchange': that.exchangeName};
+		const message = {
+			'action': 'writeToDb',
+			'params': {
+				'name':  settingName,
+				'value': settingValue
+			}
+		};
 
 		if (err) return cb(err);
 
 		if (prevValue === settingValue) {
 			that.options.log.debug(logPrefix + 'source value is the same as target value, do not write to db');
+
 			return cb(err);
 		}
 
