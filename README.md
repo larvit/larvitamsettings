@@ -22,7 +22,8 @@ const settings = new Settings({
 	'db': require('larvitdb'), // See https://github.com/larvit/larvitdb for configuration details
 
 	// OPTIONAL
-	'mode':           'noSync', // Other options is "master" and "slave" that will sync settings between database instances over the intercom
+	'log':            new (new (require('larvitutils')())).Log(), // Compatible with winston logging instance
+	'mode':           'noSync',                                   // Other options is "master" and "slave" that will sync settings between database instances over the intercom
 	'intercom':       new require('larvitamintercom')('loopback interface'),
 	'amsync_host':    null,
 	'amsync_minPort': null,
