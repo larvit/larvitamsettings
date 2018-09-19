@@ -135,7 +135,8 @@ DataWriter.prototype.ready = function ready(retries, cb) {
 
 			new amsync.SyncClient({
 				'intercom': that.intercom,
-				'exchange': that.exchangeName + '_dataDump'
+				'exchange': that.exchangeName + '_dataDump',
+				'log':      that.log
 			}, cb);
 		} else {
 			cb();
