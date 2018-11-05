@@ -130,13 +130,19 @@ DataWriter.prototype.ready = function ready(retries, cb) {
 	});
 
 	tasks.push(function (cb) {
+		that.log.debug(logPrefix + 'Waiting for db.ready()');
+		that.db.ready(cb);
+	});
+
+	tasks.push(function (cb) {
 		if (that.mode === 'both' || that.mode === 'slave') {
 			that.log.verbose(logPrefix + 'exports.mode: "' + that.mode + '", so read');
 
-			new amsync.SyncClient({
+			amsync.mariadb({
 				'intercom': that.intercom,
 				'exchange': that.exchangeName + '_dataDump',
-				'log':      that.log
+				'log':      that.log,
+				'db':       that.db
 			}, cb);
 		} else {
 			cb();
