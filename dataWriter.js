@@ -117,7 +117,7 @@ DataWriter.prototype.ready = function ready(retries, cb) {
 
 	if (that.readyInProgress === true) {
 		that.log.debug(logPrefix + 'readyInProgress === true');
-		that.eventEmitter.on('ready', cb);
+		that.emitter.on('ready', cb);
 
 		return;
 	}
