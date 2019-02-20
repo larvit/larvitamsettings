@@ -2,7 +2,7 @@
 
 # larvitamsettings
 
-Share settings between microservices. Database driven, shared using RabbitMQ with larvitamintercom
+Share settings between processes. Database driven, shared using RabbitMQ with larvitamintercom
 
 ## Installation
 
