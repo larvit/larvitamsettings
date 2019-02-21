@@ -21,7 +21,7 @@
   },
   "homepage": "https://github.com/larvit/larvitamsettings#readme",
   "devDependencies": {
-    "mocha": "6.0.0",
+    "mocha": "6.0.1",
     "mocha-eslint": "5.0.0",
     "larvitdb": "2.1.1"
   },
