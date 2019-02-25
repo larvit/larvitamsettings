@@ -2,13 +2,13 @@
 
 const Intercom = require('larvitamintercom');
 const Settings = require(__dirname + '/../index.js');
-const assert   = require('assert');
-const LUtils   = require('larvitutils');
-const lUtils   = new LUtils();
-const async    = require('async');
-const log      = new lUtils.Log('warning');
-const db       = require('larvitdb');
-const fs       = require('fs');
+const assert = require('assert');
+const LUtils = require('larvitutils');
+const lUtils = new LUtils();
+const async = require('async');
+const log = new lUtils.Log('warning');
+const db = require('larvitdb');
+const fs = require('fs');
 
 let options;
 let settings;
@@ -41,7 +41,7 @@ before(function (done) {
 					if (err) throw err;
 					log.verbose('DB config: ' + JSON.stringify(require(confFile)));
 
-					conf     = require(confFile);
+					conf = require(confFile);
 					conf.log = log;
 					db.setup(conf, cb);
 				});
@@ -50,7 +50,7 @@ before(function (done) {
 			}
 
 			log.verbose('DB config: ' + JSON.stringify(require(confFile)));
-			conf     = require(confFile);
+			conf = require(confFile);
 			conf.log = log;
 			db.setup(conf, cb);
 		});
@@ -71,10 +71,10 @@ before(function (done) {
 
 	tasks.push(function (cb) {
 		options = {
-			'mode':     'master',
-			'intercom': new Intercom('loopback interface'),
-			'log':      log,
-			'db':       db
+			mode: 'master',
+			intercom: new Intercom('loopback interface'),
+			log: log,
+			db: db
 		};
 
 		settings = new Settings(options, cb);
@@ -84,10 +84,10 @@ before(function (done) {
 });
 
 describe('Settings', function () {
-	const setting1Name   = 'fasdfdggg';
-	const setting1Value  = '3299efkadf';
-	const setting2Name   = 'obiobkbks';
-	const setting2Value  = '999f2ekfdfdd';
+	const setting1Name = 'fasdfdggg';
+	const setting1Value = '3299efkadf';
+	const setting2Name = 'obiobkbks';
+	const setting2Value = '999f2ekfdfdd';
 	const setting2Value2 = 'blirk';
 
 	it('should set a setting', function (done) {
@@ -97,7 +97,7 @@ describe('Settings', function () {
 			db.query('SELECT content FROM settings', function (err, rows) {
 				if (err) throw err;
 
-				assert.deepEqual(rows.length,     1);
+				assert.deepEqual(rows.length, 1);
 				assert.deepEqual(rows[0].content, setting1Value);
 
 				done();
@@ -116,12 +116,12 @@ describe('Settings', function () {
 
 				assert.deepEqual(rows.length, 2);
 
-				for (let i = 0; rows[i] !== undefined; i ++) {
+				for (let i = 0; rows[i] !== undefined; i++) {
 					if (rows[i].name === setting2Name) {
-						hits ++;
+						hits++;
 						assert.deepEqual(rows[i].content, setting2Value);
 					} else {
-						assert.deepEqual(rows[i].name,    setting1Name);
+						assert.deepEqual(rows[i].name, setting1Name);
 						assert.deepEqual(rows[i].content, setting1Value);
 					}
 				}
@@ -160,12 +160,12 @@ describe('Settings', function () {
 
 				assert.deepEqual(rows.length, 2);
 
-				for (let i = 0; rows[i] !== undefined; i ++) {
+				for (let i = 0; rows[i] !== undefined; i++) {
 					if (rows[i].name === setting2Name) {
-						hits ++;
+						hits++;
 						assert.deepEqual(rows[i].content, setting2Value);
 					} else {
-						assert.deepEqual(rows[i].name,    setting1Name);
+						assert.deepEqual(rows[i].name, setting1Name);
 						assert.deepEqual(rows[i].content, setting1Value);
 					}
 				}
@@ -188,12 +188,12 @@ describe('Settings', function () {
 
 				assert.deepEqual(rows.length, 2);
 
-				for (let i = 0; rows[i] !== undefined; i ++) {
+				for (let i = 0; rows[i] !== undefined; i++) {
 					if (rows[i].name === setting2Name) {
-						hits ++;
+						hits++;
 						assert.deepEqual(rows[i].content, setting2Value2);
 					} else {
-						assert.deepEqual(rows[i].name,    setting1Name);
+						assert.deepEqual(rows[i].name, setting1Name);
 						assert.deepEqual(rows[i].content, setting1Value);
 					}
 				}
