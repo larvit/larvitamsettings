@@ -2,21 +2,21 @@
 
 const topLogPrefix = 'larvitamsettings: dataWriter.js - ';
 const EventEmitter = require('events').EventEmitter;
-const DbMigration  = require('larvitdbmigration');
-const amsync       = require('larvitamsync');
-const async        = require('async');
+const DbMigration = require('larvitdbmigration');
+const amsync = require('larvitamsync');
+const async = require('async');
 
 /**
  * Datawriter
  *
- * @param {obj}  options - {db, log, intercom, exchangeName, mode}
- * @param {func} cb      - callback(err)
+ * @param {obj} options - {db, log, intercom, exchangeName, mode}
+ * @param {func} cb - callback(err)
  */
 function DataWriter(options, cb) {
 	const that = this;
 
 	that.readyInProgress = false;
-	that.isReady         = false;
+	that.isReady = false;
 
 	for (const key of Object.keys(options)) {
 		that[key] = options[key];
@@ -29,9 +29,9 @@ function DataWriter(options, cb) {
 
 DataWriter.prototype.listenToQueue = function (cb) {
 	const logPrefix = topLogPrefix + 'listenToQueue() - ';
-	const that      = this;
-	const options   = {'exchange': that.exchangeName};
-	const tasks     = [];
+	const that = this;
+	const options = {exchange: that.exchangeName};
+	const tasks = [];
 
 	let listenMethod;
 
@@ -41,7 +41,7 @@ DataWriter.prototype.listenToQueue = function (cb) {
 
 	tasks.push(function (cb) {
 		if (that.mode === 'master') {
-			listenMethod      = 'consume';
+			listenMethod = 'consume';
 			options.exclusive = true; // It is important no other client tries to sneak
 			//                        // out messages from us, and we want "consume"
 			//                        // since we want the queue to persist even if this
@@ -95,13 +95,13 @@ DataWriter.prototype.listenToQueue = function (cb) {
 
 DataWriter.prototype.ready = function ready(retries, cb) {
 	const logPrefix = topLogPrefix + 'ready() - ';
-	const tasks     = [];
-	const that      = this;
+	const tasks = [];
+	const that = this;
 
 	that.log.silly(logPrefix + 'Running');
 
 	if (typeof retries === 'function') {
-		cb      = retries;
+		cb = retries;
 		retries = 0;
 	}
 
@@ -139,10 +139,10 @@ DataWriter.prototype.ready = function ready(retries, cb) {
 			that.log.verbose(logPrefix + 'exports.mode: "' + that.mode + '", so read');
 
 			amsync.mariadb({
-				'intercom': that.intercom,
-				'exchange': that.exchangeName + '_dataDump',
-				'log':      that.log,
-				'db':       that.db
+				intercom: that.intercom,
+				exchange: that.exchangeName + '_dataDump',
+				log: that.log,
+				db: that.db
 			}, cb);
 		} else {
 			cb();
@@ -157,12 +157,12 @@ DataWriter.prototype.ready = function ready(retries, cb) {
 
 		that.log.debug(logPrefix + 'Waiting for dbmigration()');
 
-		options.dbType               = 'mariadb';
-		options.dbDriver             = that.db;
-		options.tableName            = 'setting_db_version';
+		options.dbType = 'mariadb';
+		options.dbDriver = that.db;
+		options.tableName = 'setting_db_version';
 		options.migrationScriptsPath = __dirname + '/dbmigration';
-		options.log                  = that.log;
-		dbMigration                  = new DbMigration(options);
+		options.log = that.log;
+		dbMigration = new DbMigration(options);
 
 		dbMigration.run(function (err) {
 			if (err) {
@@ -194,12 +194,12 @@ DataWriter.prototype.ready = function ready(retries, cb) {
 };
 
 DataWriter.prototype.runDumpServer = function runDumpServer(cb) {
-	const that    = this;
+	const that = this;
 	const options = {
-		'exchange': that.exchangeName + '_dataDump',
-		'host':     that.amsync ? that.amsync.host : null,
-		'minPort':  that.amsync ? that.amsync.minPort : null,
-		'maxPort':  that.amsync ? that.amsync.maxPort : null
+		exchange: that.exchangeName + '_dataDump',
+		host: that.amsync ? that.amsync.host : null,
+		minPort: that.amsync ? that.amsync.minPort : null,
+		maxPort: that.amsync ? that.amsync.maxPort : null
 	};
 	const args = [];
 
@@ -224,13 +224,13 @@ DataWriter.prototype.runDumpServer = function runDumpServer(cb) {
 	args.push('setting_db_version');
 
 	options.dataDumpCmd = {
-		'command': 'mysqldump',
-		'args':    args
+		command: 'mysqldump',
+		args: args
 	};
 
 	options['Content-Type'] = 'application/sql';
-	options.intercom        = that.intercom;
-	options.log             = that.log;
+	options.intercom = that.intercom;
+	options.log = that.log;
 
 	new amsync.SyncServer(options, cb);
 };
