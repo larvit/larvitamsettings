@@ -2,7 +2,7 @@
 
 # larvitamsettings
 
-Share settings between processes. Database driven, shared using RabbitMQ with larvitamintercom
+Get and set settings from database. It is as simple as that!
 
 ## Installation
 
@@ -19,24 +19,16 @@ Setting value is limited to ~65MB UTF-8
 const Settings = require('larvitamsettings');
 
 const settings = new Settings({
-	'db': require('larvitdb'), // See https://github.com/larvit/larvitdb for configuration details
+	db: require('larvitdb'), // See https://github.com/larvit/larvitdb for configuration details
 
 	// OPTIONAL
-	'log':            new (new (require('larvitutils')())).Log(), // Compatible with winston logging instance
-	'mode':           'noSync',                                   // Other options is "master" and "slave" that will sync settings between database instances over the intercom
-	'intercom':       new require('larvitamintercom')('loopback interface'),
-	'amsync_host':    null,
-	'amsync_minPort': null,
-	'amsync_maxPort': null
+	log: new (new (require('larvitutils')())).Log() // Compatible with winston logging instance
 });
 
-settings.set('setting name', 'setting value - woho', function (err) {
-	if (err) throw err;
+await settings.set('setting name', 'setting value - woho');
 
-	settings.get('setting_name', function (err, settingValue) {
-		if (err) throw err;
+const settingValue = await settings.get('setting_name');
 
-		console.log(settingValue); // "setting value - woho"
-	});
-});
+console.log(settingValue); // "setting value - woho"
+
 ```
