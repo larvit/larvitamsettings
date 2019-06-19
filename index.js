@@ -1,139 +1,92 @@
 'use strict';
 
-const topLogPrefix = 'larvitamsettings: index.js: ';
-const DataWriter = require(__dirname + '/dataWriter.js');
-const Intercom = require('larvitamintercom');
+const DbMigration = require('larvitdbmigration');
 const LUtils = require('larvitutils');
 
-/**
- * Module main constructor
- *
- * @param {obj} options - {db, log, exchangeName, mode, intercom, db, amsync_host, amsync_minPort, amsync_maxPort}
- * @param {func} cb - callback(err)
- * @returns {obj} - instance of this
- */
-function Settings(options, cb) {
-	const logPrefix = topLogPrefix + 'Settings() - ';
-	const that = this;
+const topLogPrefix = 'larvitamsettings: index.js: ';
 
-	if (typeof options === 'function') {
-		cb = options;
-		options = {};
-	}
+class Settings {
 
-	if (!typeof cb === 'function') {
-		cb = function () {};
-	}
+	/**
+	 * Constructor
+	 *
+	 * @param {object} options - Constructor options
+	 * @param {object} options.db - Database instance
+	 * @param {object} [options.log] - Logging instance
+	 */
+	constructor(options) {
+		const logPrefix = topLogPrefix + 'Settings() - ';
 
-	that.options = options || {};
+		this.options = options || {};
 
-	if (!that.options.log) {
-		const lUtils = new LUtils();
+		if (!this.options.log) {
+			const lUtils = new LUtils();
 
-		that.options.log = new lUtils.Log();
-	}
-	that.log = that.options.log;
+			this.options.log = new lUtils.Log();
+		}
+		this.log = this.options.log;
 
-	if (!that.options.db) {
-		const err = new Error('Required option "db" is missing');
+		if (!this.options.db) {
+			const err = new Error('Required option "db" is missing');
 
-		that.log.error(logPrefix + err.message);
-		cb(err);
-
-		return that;
-	}
-
-	if (!that.options.exchangeName) {
-		that.options.exchangeName = 'larvitamsettings';
-	}
-
-	if (!that.options.mode) {
-		options.log.info(logPrefix + 'No "mode" option given, defaulting to "noSync"');
-		that.options.mode = 'noSync';
-	} else if (['noSync', 'master', 'slave'].indexOf(that.options.mode) === -1) {
-		const err = new Error('Invalid "mode" option given: "' + that.options.mode + '", must be one of "noSync", "master" or "slave"');
-
-		that.log.error(logPrefix + err.message);
-		cb(err);
-
-		return that;
-	}
-
-	if (!that.options.intercom) {
-		that.log.info(logPrefix + 'No "intercom" option given, defaulting to "loopback interface"');
-		that.options.intercom = new Intercom('loopback interface');
-	}
-
-	for (const key of Object.keys(that.options)) {
-		that[key] = that.options[key];
-	}
-
-	that.dataWriter = new DataWriter({
-		exchangeName: that.exchangeName,
-		intercom: that.intercom,
-		mode: that.mode,
-		log: that.log,
-		db: that.db,
-		amsync_host: that.amsync_host || null,
-		amsync_minPort: that.amsync_minPort || null,
-		amsync_maxPort: that.amsync_maxPort || null
-	}, cb);
-};
-
-Settings.prototype.get = function get(settingName, cb) {
-	const that = this;
-
-	that.dataWriter.ready(err => {
-		if (err) {
-			cb(err);
-
-			return;
+			this.log.error(logPrefix + err.message);
+			throw err;
 		}
 
-		that.db.query('SELECT content FROM settings WHERE name = ?', [settingName], function (err, rows) {
-			if (err) return cb(err);
+		for (const key of Object.keys(this.options)) {
+			this[key] = this.options[key];
+		}
+	};
 
-			if (rows.length === 0) {
-				return cb(null, null);
-			}
+	/**
+	 * Get a setting
+	 * @param {string} settingName - Name of the setting
+	 * @return {promise} - Resolves with a result
+	 */
+	async get(settingName) {
+		const logPrefix = topLogPrefix + 'get() - ';
+		const result = await this.db.query('SELECT content FROM settings WHERE name = ?', [settingName]);
 
-			cb(null, rows[0].content);
-		});
-	});
-};
+		this.log.debug(logPrefix + 'Getting setting: ' + settingName);
 
-Settings.prototype.set = function set(settingName, settingValue, cb) {
-	const logPrefix = topLogPrefix + 'set() - ';
-	const that = this;
-
-	if (typeof cb !== 'function') {
-		cb = function () {};
+		return (result.rows.length !== 0) ? result.rows[0].content : null;
 	}
 
-	that.get(settingName, function (err, prevValue) {
-		const options = {exchange: that.exchangeName};
-		const message = {
-			action: 'writeToDb',
-			params: {
-				name: settingName,
-				value: settingValue
-			}
-		};
+	/**
+	 * Set a setting
+	 * @param {string} settingName - Name of the setting
+	 * @param {string} settingValue - Value of the setting
+	 * @return {promise} - Resolves when settings is set
+	 */
+	async set(settingName, settingValue) {
+		const logPrefix = topLogPrefix + 'set() - ';
 
-		if (err) return cb(err);
+		this.log.debug(logPrefix + 'Setting setting: ' + settingName + ', with value: ' + settingValue);
 
-		if (prevValue === settingValue) {
-			that.options.log.debug(logPrefix + 'source value is the same as target value, do not write to db');
+		await this.db.query('REPLACE INTO settings VALUES(?,?);', [settingName, settingValue]);
+	}
 
-			return cb(err);
-		}
+	/**
+	 * Run database migrations for the library
+	 *
+	 * @return {promise} - Resolves when database migrations are done
+	 */
+	async runDbMigrations() {
+		const logPrefix = topLogPrefix + 'runDbMigrations() - ';
+		this.log.info(logPrefix + 'Running DB migrations');
 
-		that.options.intercom.send(message, options, function (err, msgUuid) {
-			if (err) return cb(err);
+		const options = {};
 
-			that.dataWriter.emitter.once(msgUuid, cb);
-		});
-	});
-};
+		options.dbType = 'mariadb';
+		options.dbDriver = this.db;
+		options.tableName = 'setting_db_version';
+		options.migrationScriptsPath = __dirname + '/dbmigration';
+		options.log = this.log;
+
+		const dbMigration = new DbMigration(options);
+
+		await dbMigration.run();
+	}
+}
 
 exports = module.exports = Settings;

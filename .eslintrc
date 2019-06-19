@@ -1,5 +1,8 @@
 {
   "root": true,
+  "parserOptions": {
+    "ecmaVersion": 2017
+  },
   "env": {
     "es6": true,
     "mocha": true,
@@ -33,7 +36,6 @@
     "multiline-ternary": ["error", "never"],
     "new-cap": ["error"],
     "new-parens": ["error"],
-    "newline-per-chained-call": ["error"],
     "no-dupe-args": ["error"],
     "no-dupe-keys": ["error"],
     "no-invalid-regexp": ["error"],
@@ -60,12 +62,10 @@
     "no-whitespace-before-property": ["error"],
     "nonblock-statement-body-position": ["error", "beside"],
     "one-var": ["error", "never"],
-    "padded-blocks": ["error", "never"],
     "padding-line-between-statements": [
       "error",
       {"blankLine": "always", "prev": "*", "next": "return"},
-      {"blankLine": "always", "prev": ["const", "let"], "next": "*"},
-      {"blankLine": "any", "prev": ["const", "let"], "next": ["const", "let"]}
+      {"blankLine": "any", "prev": ["const", "let"], "next": "*"}
     ],
     "quote-props": ["error", "as-needed"],
     "quotes": ["error", "single"],
