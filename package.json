@@ -26,7 +26,6 @@
     "larvitdb": "3.0.2"
   },
   "dependencies": {
-    "async": "^2.6.1",
     "larvitdbmigration": "^5.0.1",
     "larvitutils": "^2.1.0"
   }
