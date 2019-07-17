@@ -23,7 +23,7 @@
   "devDependencies": {
     "mocha": "6.1.4",
     "mocha-eslint": "5.0.0",
-    "larvitdb": "3.0.2"
+    "larvitdb": "3.0.3"
   },
   "dependencies": {
     "larvitdbmigration": "^5.0.1",
