@@ -27,6 +27,6 @@
   },
   "dependencies": {
     "larvitdbmigration": "^5.0.1",
-    "larvitutils": "^2.1.0"
+    "larvitutils": "^3.0.0"
   }
 }
