@@ -2,9 +2,8 @@
 
 const Settings = require(__dirname + '/../index.js');
 const assert = require('assert');
-const LUtils = require('larvitutils');
-const lUtils = new LUtils();
-const log = new lUtils.Log('warning');
+const { Log } = require('larvitutils');
+const log = new Log('warning');
 const Db = require('larvitdb');
 
 let options;

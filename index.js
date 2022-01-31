@@ -1,7 +1,7 @@
 'use strict';
 
-const DbMigration = require('larvitdbmigration');
-const LUtils = require('larvitutils');
+const { DbMigration } = require('larvitdbmigration');
+const { Log } = require('larvitutils');
 
 const topLogPrefix = 'larvitamsettings: index.js: ';
 
@@ -20,9 +20,7 @@ class Settings {
 		this.options = options || {};
 
 		if (!this.options.log) {
-			const lUtils = new LUtils();
-
-			this.options.log = new lUtils.Log();
+			this.options.log = new Log();
 		}
 		this.log = this.options.log;
 
