@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/larvit/larvitamsettings.svg?branch=master)](https://travis-ci.org/larvit/larvitamsettings) [![Dependencies](https://david-dm.org/larvit/larvitamsettings.svg)](https://david-dm.org/larvit/larvitamsettings.svg)
+[![Build Status](https://github.com/larvit/larvitamsettings/actions/workflows/ci.yml/badge.svg)](https://github.com/larvit/larvitamsettings/actions)
 
 # larvitamsettings
 
