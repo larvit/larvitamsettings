@@ -78,7 +78,7 @@ class Settings {
 		options.dbType = 'mariadb';
 		options.dbDriver = this.db;
 		options.tableName = 'setting_db_version';
-		options.migrationScriptsPath = __dirname + '/dbmigration';
+		options.migrationScriptPath = __dirname + '/dbmigration';
 		options.log = this.log;
 
 		const dbMigration = new DbMigration(options);
