@@ -1,6 +1,6 @@
 {
   "name": "larvitamsettings",
-  "version": "0.8.136",
+  "version": "0.8.137",
   "description": "Share settings between microservices. Database driven, shared using RabbitMQ with larvitamintercom",
   "main": "index.js",
   "scripts": {
@@ -27,8 +27,8 @@
     "mocha": "11.7.4"
   },
   "dependencies": {
-    "larvitdb": "3.2.135",
-    "larvitdbmigration": "7.0.182",
-    "larvitutils": "5.1.165"
+    "larvitdb": "3.2.136",
+    "larvitdbmigration": "7.0.184",
+    "larvitutils": "5.1.168"
   }
 }
